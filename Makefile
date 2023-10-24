@@ -43,7 +43,3 @@ servicemesh:
 	@helm upgrade --install -namespace istio-system istio-base istio/base --set defaultRevision=default
 	@helm upgrade --install -namespace istio-system istiod istio/istiod --wait
 	@helm ls -n istio-system
-
-
-
-
