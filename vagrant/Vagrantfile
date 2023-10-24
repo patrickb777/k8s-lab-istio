@@ -3,7 +3,7 @@
 
 # Configure and boot strap Debian 12 for Kubernetes lab environment
 Vagrant.configure("2") do |config|
-  # Vagrant box image
+  # Vagrant box image, this could be siwtched to Ubuntu if preferred
   config.vm.box = "generic/debian12"
 
   # Allocated resources
@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
 
   # Bootstrap VM
   config.vm.provision "shell", inline: <<-SHELL
-    # Update Debian
+    # Update OS
     sudo apt-get update && sudo apt-get upgrade
 
     # Install Docker Engine

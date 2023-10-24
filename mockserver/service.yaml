@@ -12,7 +12,6 @@ metadata:
   name: mockserver
   namespace: mockserver
 spec:
-  clusterIP: 10.96.7.142
   ports:
   - port: 80
     protocol: TCP
