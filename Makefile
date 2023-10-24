@@ -21,6 +21,7 @@ endif
 		kind create cluster --config=$(KIND_CONFIG) --name=$(KIND_CLUSTER_NAME); \
 		kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml; \
 		kubectl wait --namespace metallb-system --for=condition=ready pod --selector=app=metallb --timeout=90s; \
+		./update-lb-IPrange.sh; \
 		kubectl apply -f ./cluster/metallb-config.yaml; \
 	fi
 
