@@ -2,7 +2,7 @@
 KIND_CLUSTER_NAME := local-lab
 KIND_CONFIG := ./cluster/kind-config.yaml
 
-.PHONY: clean cluster bootstrap mockserver istio
+.PHONY: clean cluster ingress mockserver istio
 all: cluster
 
 clean:
@@ -28,7 +28,7 @@ endif
 		kubectl apply -f ./cluster/metallb-config.yaml; \
 	fi
 
-bootstrap:
+ingress:
 # Install K8s gateway API CRDs
 	@kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || { kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v0.8.0" | kubectl apply -f -; }
 	@kubectl create namespace ingress

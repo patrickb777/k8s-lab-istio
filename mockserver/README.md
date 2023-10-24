@@ -8,4 +8,4 @@
 
 
 To Do
-1. Improve this process to be more helm native!
+1. Improve this process to be more helm native, i..e template out the configmap and apply via helm values
