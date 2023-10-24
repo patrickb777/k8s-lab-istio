@@ -48,5 +48,7 @@ mockserver:
 	@kubectl label namespace mockserver istio-injection=enabled
 	@kubectl label namespace mockserver istio-shared-gateway-access=true
 	@kubectl --namespace mockserver apply -f ./mockserver/configmap.yaml
+	@helm repo add mockserver https://www.mock-server.com
+	@helm repo update
 	@helm upgrade --install --namespace mockserver --version 5.14.0 mockserver mockserver/mockserver
 	@kubectl --namespace mockserver apply -f ./mockserver/HTTProute.yaml
