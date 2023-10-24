@@ -1,0 +1,16 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: mockserver
+  namespace: mockserver
+spec:
+  parentRefs:
+  - name: external
+    namespace: ingress
+  rules:
+  - matches:
+    - path:
+        value: /mockserver
+    backendRefs:
+    - name: mockserver
+      port: 1080

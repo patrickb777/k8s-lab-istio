@@ -2,8 +2,8 @@
 KIND_CLUSTER_NAME := local-lab
 KIND_CONFIG := ./cluster/kind-config.yaml
 
-.PHONY: clean cluster ingress mockserver istio
-all: cluster
+.PHONY: clean cluster ingress mockserver servicemesh
+all: cluster servicemesh ingress mockserver
 
 clean:
 	@kind delete cluster --name=$(KIND_CLUSTER_NAME)
@@ -17,7 +17,7 @@ ifeq (, $(shell which kind))
 	@sudo mv ./kind /usr/local/bin/kind
 endif
 # Check if a cluster already exists, if not create else skip
-# Also creates a Metal LB deployment to enable LoadBalancer services - TODO dynamically set IP range from `docker network inspect -f '{{.IPAM.Config}}' kind`
+# Also creates a Metal LB deployment to enable LoadBalancer services
 	@if kind get clusters | grep -qx "$(KIND_CLUSTER_NAME)"; then \
 		echo "Cluster already exists, skipping creation..." ; \
 	else \
@@ -28,18 +28,25 @@ endif
 		kubectl apply -f ./cluster/metallb-config.yaml; \
 	fi
 
+servicemesh:
+	@kubectl create namespace istio-system
+	@helm repo add istio https://istio-release.storage.googleapis.com/charts
+	@helm repo update
+	@helm upgrade --install --namespace istio-system istiobase istio/base --set defaultRevision=default
+	@helm upgrade --install --namespace istio-system istiod istio/istiod --wait
+
 ingress:
 # Install K8s gateway API CRDs
-	@kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || { kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v0.8.0" | kubectl apply -f -; }
+	@kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v0.8.1/standard-install.yaml
+	@kubectl wait --namespace=gateway-system --for=condition=Ready pod -l name=gateway-api-admission-server
 	@kubectl create namespace ingress
+	@kubectl --namespace ingress apply -f ./ingress/external-gateway.yaml
 
 mockserver:
 	@kubectl create namespace mockserver
-	@kubectl -n mockserver apply -f ./mockserver/configmap.yaml
+# label the namespace to instruct Istio to automatically inject Envoy sidecar proxies and allow cross namespace routing
+	@kubectl label namespace mockserver istio-injection=enabled
+	@kubectl label namespace mockserver istio-shared-gateway-access=true
+	@kubectl --namespace mockserver apply -f ./mockserver/configmap.yaml
 	@helm upgrade --install --namespace mockserver --version 5.14.0 mockserver mockserver/mockserver
-
-servicemesh:
-	@kubectl create namespace istio-system
-	@helm upgrade --install -namespace istio-system istio-base istio/base --set defaultRevision=default
-	@helm upgrade --install -namespace istio-system istiod istio/istiod --wait
-	@helm ls -n istio-system
+	@kubectl --namespace mockserver apply -f ./mockserver/HTTProute.yaml

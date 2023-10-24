@@ -3,12 +3,13 @@
 
 # Configure and boot strap Debian 12 for Kubernetes lab environment
 Vagrant.configure("2") do |config|
-  # Vagrant box image, this could be siwtched to Ubuntu if preferred
+  # Vagrant box image, this could be siwtched to Ubuntu if preferred though some additional packages may need to be installed
   config.vm.box = "generic/debian12"
 
   # Allocated resources
   config.vm.provider "virtualbox" do |vb|
-    vb.memory = "2048"
+    vb.memory = "8192"
+    vb.cpus = 4
   end
   
   # Sync'd folders
